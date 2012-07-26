@@ -1,70 +1,79 @@
 package com.technotalkative.viewstubdemo;
 
 import java.io.FileNotFoundException;
-import java.io.InputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 import android.app.Activity;
-import android.content.ContentResolver;
-import android.content.Intent;
-import android.graphics.drawable.BitmapDrawable;
-import android.net.Uri;
+import android.hardware.Camera;
+import android.hardware.Camera.PictureCallback;
+import android.hardware.Camera.ShutterCallback;
 import android.os.Bundle;
-import android.provider.MediaStore;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.ImageView;
+import android.widget.Button;
+import android.widget.FrameLayout;
 
 public class takephoto extends Activity {
-	
-	//CONSTANTS
-	
-	private static final int REQ_CODE_PHOTO_TAKE = 1;	
-    
-	
-	
-	//METHODS
-	
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_takephoto);
-        
-		findViewById(R.id.btn_take_photo).setOnClickListener(new OnClickListener() {			
-			public void onClick(View v) {
-				Intent i = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-				startActivityForResult(i, REQ_CODE_PHOTO_TAKE);
-			}
-		});        
-    }
-    
+	private static final String TAG = "CameraDemo";
+	Camera camera;
+	Preview preview;
+	Button buttonClick;
+
+	/** Called when the activity is first created. */
 	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		super.onActivityResult(requestCode, resultCode, data);	
-		
-		if(resultCode != RESULT_OK) return;
-		
-		switch (requestCode) {
-		case REQ_CODE_PHOTO_TAKE:
-			Uri u = data.getData();
-			onPhotoReturned(u);
-	    	break;	    	
-		default:
-			break;
-		}
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_takephoto);
+
+		preview = new Preview(this);
+		((FrameLayout) findViewById(R.id.preview)).addView(preview);
+
+		buttonClick = (Button) findViewById(R.id.buttonClick);
+		buttonClick.setOnClickListener( new OnClickListener() {
+			public void onClick(View v) {
+				preview.camera.takePicture(shutterCallback, rawCallback, jpegCallback);
+			}
+		});
+
+		Log.d(TAG, "onCreate'd");
 	}
-    
-	private void onPhotoReturned(Uri u) {
-		InputStream is = null;
-		try {
-			ContentResolver cResolver = getContentResolver();
-			is = cResolver.openInputStream(u);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+
+
+	ShutterCallback shutterCallback = new ShutterCallback() {
+		public void onShutter() {
+			Log.d(TAG, "onShutter'd");
 		}
-		BitmapDrawable bmp = new BitmapDrawable(is);	
-		ImageView mainImage = (ImageView)findViewById(R.id.img_main);
-		mainImage.setImageDrawable(bmp);
-	}
-    
-    
+	};
+
+	/** Handles data for raw picture */
+	PictureCallback rawCallback = new PictureCallback() {
+		public void onPictureTaken(byte[] data, Camera camera) {
+			Log.d(TAG, "onPictureTaken - raw");
+		}
+	};
+
+	/** Handles data for jpeg picture */
+	PictureCallback jpegCallback = new PictureCallback() {
+		public void onPictureTaken(byte[] data, Camera camera) {
+			FileOutputStream outStream = null;
+			try {
+				// write to local sandbox file system
+//				outStream = CameraDemo.this.openFileOutput(String.format("%d.jpg", System.currentTimeMillis()), 0);	
+				// Or write to sdcard
+				outStream = new FileOutputStream(String.format("/sdcard/%d.jpg", System.currentTimeMillis()));	
+				outStream.write(data);
+				outStream.close();
+				Log.d(TAG, "onPictureTaken - wrote bytes: " + data.length);
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			} finally {
+			}
+			Log.d(TAG, "onPictureTaken - jpeg");
+		}
+	};
+
 }
