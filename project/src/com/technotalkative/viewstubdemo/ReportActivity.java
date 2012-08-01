@@ -1,12 +1,19 @@
 package com.technotalkative.viewstubdemo;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Point;
+import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -20,13 +27,21 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.technotalkative.viewstubdemo.R;
+
 import com.google.android.maps.GeoPoint;
+import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.MapActivity;
 import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
 import com.google.android.maps.MyLocationOverlay;
+import com.google.android.maps.Overlay;
+import com.google.android.maps.OverlayItem;
+
 
 public class ReportActivity extends MapActivity implements
 	LocationListener {
@@ -39,20 +54,24 @@ public class ReportActivity extends MapActivity implements
     private MyLocationOverlay myLocation = null;
     double lat0;
     double lng0;
+    double tmp1,tmp2;
+    GeoPoint pp = null;
     EditText text;
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
 	super.onCreate(savedInstanceState);
 	setContentView(R.layout.activity_report);
-	mapView = (MapView) this.findViewById(R.id.mapView);
+	mapView = (MapView) this.findViewById(R.id.map);
+	//mapView.setStreetView(true);
 	mapView.setBuiltInZoomControls(true);
+	
 	text= (EditText)findViewById(R.id.adresse);
 	lm = (LocationManager) this.getSystemService(LOCATION_SERVICE);
 	lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 0, this);
 	lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 10000, 0,
 		this);
-
+	
 	mc = mapView.getController();
 	mc.setZoom(15);
 
@@ -67,26 +86,35 @@ public class ReportActivity extends MapActivity implements
 	});
 	mapView.getOverlays().add(myLocation);
 	Log.i("mylocation","avant");
-	 
-	
+
+
+	 Drawable marker=getResources().getDrawable(R.drawable.pushpin);
+	    
+	    marker.setBounds(0, 0, marker.getIntrinsicWidth(),
+	                            marker.getIntrinsicHeight());
+	    
+	    mapView.getOverlays().add(new SitesOverlay(marker));
+	    
+	    myLocation=new MyLocationOverlay(this, mapView);
+	    mapView.getOverlays().add(myLocation);
 	         ImageButton btn_cam = (ImageButton) findViewById(R.id.button_camera);
-	   		 
+
 	   		 btn_cam.setOnClickListener(new View.OnClickListener() {
-	   				
-	   				
+
+
 	   				public void onClick(View view) {
 	   					// Launching News Feed Screen
 	   					AlertDialog.Builder alertDialog = new AlertDialog.Builder(ReportActivity.this);
-	   					 
+
 	   	                // Setting Dialog Title
 	   	                alertDialog.setTitle("vous devez joindre une photo");
-	   	 
+
 	   	                // Setting Dialog Message
 	   	                alertDialog.setMessage("allez à l'emplacement de la photo");
-	   	 
+
 	   	                // Setting Icon to Dialog
 	   	                alertDialog.setIcon(R.drawable.gd_action_bar_slideshow);
-	   	 
+
 	   	                // Setting Positive "Yes" Button
 	   	                alertDialog.setPositiveButton("camera", new DialogInterface.OnClickListener() {
 	   	                    public void onClick(DialogInterface dialog, int which) {
@@ -94,7 +122,7 @@ public class ReportActivity extends MapActivity implements
 	   	            			startActivity(i);
 	   	                    }
 	   	                });
-	   	 
+
 	   	                // Setting Negative "NO" Button
 	   	                alertDialog.setNegativeButton("galerie", new DialogInterface.OnClickListener() {
 	   	                    public void onClick(DialogInterface dialog, int which) {
@@ -103,7 +131,7 @@ public class ReportActivity extends MapActivity implements
 	   	                    //Toast.makeText(getApplicationContext(), "You clicked on NO", Toast.LENGTH_SHORT).show();
 	   	                    }
 	   	                });
-	   	 
+
 	   	                // Setting Netural "Cancel" Button
 	   	                alertDialog.setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
 	   	                    public void onClick(DialogInterface dialog, int which) {
@@ -112,13 +140,15 @@ public class ReportActivity extends MapActivity implements
 	   	                                        Toast.LENGTH_SHORT).show();
 	   	                    }
 	   	                });
-	   	 
+
 	   	                // Showing Alert Message
 	   	                alertDialog.show();
 	   				}
 	   			});
+	   		 
+	   		
 	       }
-	
+
     
 
     @Override
@@ -145,10 +175,11 @@ public class ReportActivity extends MapActivity implements
     public void onLocationChanged(Location location) {
 	lat = location.getLatitude();
 	lng = location.getLongitude();
-	
+	pp=new GeoPoint ((int) (lat * 1E6), (int) (lng * 1E6));
 	GeoPoint p = new GeoPoint((int) (lat * 1E6), (int) (lng * 1E6));
 	mc.animateTo(p);
 	mc.setCenter(p);
+	
     }
 
     public void onProviderDisabled(String provider) {
@@ -158,39 +189,6 @@ public class ReportActivity extends MapActivity implements
     }
 
 
-    public boolean onTouchEvent(MotionEvent event, MapView mapView) 
-    {   
-        //---when user lifts his finger---
-        if (event.getAction() == 1) {                
-            GeoPoint p = mapView.getProjection().fromPixels(
-                (int) event.getX(),
-                (int) event.getY());
-
-            Geocoder geoCoder = new Geocoder(
-                getBaseContext(), Locale.getDefault());
-            try {
-                List<Address> addresses = geoCoder.getFromLocation(
-                    p.getLatitudeE6()  / 1E6, 
-                    p.getLongitudeE6() / 1E6, 1);
-
-                String add = "";
-                if (addresses.size() > 0) 
-                {
-                    for (int i=0; i<addresses.get(0).getMaxAddressLineIndex(); 
-                         i++)
-                       add += addresses.get(0).getAddressLine(i) + "\n";
-                }
-
-                Toast.makeText(getBaseContext(), add, Toast.LENGTH_SHORT).show();
-            }
-            catch (IOException e) {                
-                e.printStackTrace();
-            }   
-            return true;
-        }
-        else                
-            return false;
-    }        
     
     
     public void onStatusChanged(String provider, int status, Bundle extras) {
@@ -236,4 +234,142 @@ public class ReportActivity extends MapActivity implements
     	  };
 
     	 };
+    	 
+    	 private GeoPoint getPoint(double lat, double lon) {
+    		    return(new GeoPoint((int)(lat*1000000.0),
+    		                          (int)(lon*1000000.0)));
+    		  }
+    		    
+    		  private class SitesOverlay extends ItemizedOverlay<OverlayItem> {
+    		    private List<OverlayItem> items=new ArrayList<OverlayItem>();
+    		    private Drawable marker=null;
+    		    private OverlayItem inDrag=null;
+    		    private ImageView dragImage=null;
+    		    private int xDragImageOffset=0;
+    		    private int yDragImageOffset=0;
+    		    private int xDragTouchOffset=0;
+    		    private int yDragTouchOffset=0;
+    		    boolean first;
+    		    public SitesOverlay(Drawable marker) {
+    		      
+    		    	super(marker);
+    		      this.marker=marker;
+    		      first=true;
+    		      
+    		      dragImage=(ImageView)findViewById(R.id.drag);
+    		      xDragImageOffset=dragImage.getDrawable().getIntrinsicWidth()/2;
+    		      yDragImageOffset=dragImage.getDrawable().getIntrinsicHeight();
+    		      
+    		/*      items.add(new OverlayItem(getPoint(40.748963847316034,
+    		                                          -73.96807193756104),
+    		                                "UN", "United Nations"));
+    		      items.add(new OverlayItem(getPoint(40.76866299974387,
+    		                                          -73.98268461227417),
+    		                                "Lincoln Center",
+    		                                "Home of Jazz at Lincoln Center"));*/
+    		     
+
+    		      
+    		    
+
+    		     // populate();
+    		    }
+    		    
+    		    @Override
+    		    protected OverlayItem createItem(int i) {
+    		      return(items.get(i));
+    		    }
+    		    
+    		    @Override
+    		    public void draw(Canvas canvas, MapView mapView,
+    		                      boolean shadow) {
+    		      super.draw(canvas, mapView, shadow);
+    		      
+    		      boundCenterBottom(marker);
+    		    }
+    		    
+    		    @Override
+    		    public int size() {
+    		      return(items.size());
+    		    }
+    		    
+    		    @Override
+    		    public boolean onTouchEvent(MotionEvent event, MapView mapView) {
+    		      final int action=event.getAction();
+    		      final int x=(int)event.getX();
+    		      final int y=(int)event.getY();
+    		      boolean result=false;
+    		      
+    		      
+    		      if (action==MotionEvent.ACTION_DOWN) {
+    		    	  
+    		        for (OverlayItem item : items) {
+    		          Point p=new Point(0,0);
+    		          
+    		          mapView.getProjection().toPixels(item.getPoint(), p);
+    		          
+    		          if (hitTest(item, marker, x-p.x, y-p.y)) {
+    		            result=true;
+    		            inDrag=item;
+    		            items.remove(inDrag);
+    		            populate();
+
+    		            xDragTouchOffset=0;
+    		            yDragTouchOffset=0;
+    		            
+    		            setDragImagePosition(p.x, p.y);
+    		            dragImage.setVisibility(View.VISIBLE);
+
+    		            xDragTouchOffset=x-p.x;
+    		            yDragTouchOffset=y-p.y;
+    		            
+    		            break;
+    		          }
+    		        }
+    		      }
+    		      else if (action==MotionEvent.ACTION_MOVE && inDrag!=null) {
+    		        setDragImagePosition(x, y);
+    		        result=true;
+    		      }
+    		      else if (action==MotionEvent.ACTION_UP && inDrag!=null) {
+    		        dragImage.setVisibility(View.GONE);
+    		        
+    		        GeoPoint pt=mapView.getProjection().fromPixels(x-xDragTouchOffset,
+    		                                                   y-yDragTouchOffset);
+    		        OverlayItem toDrop=new OverlayItem(pt, inDrag.getTitle(),
+    		                                           inDrag.getSnippet());
+    		        
+    		        items.add(toDrop);
+    		        populate();
+    		        
+    		        inDrag=null;
+    		        result=true;
+    		      }
+    		          		      
+    		      if(first==true){
+					  items.add(new OverlayItem(getPoint(lat,lng),"laaaaaac", "emchii")); 
+					  populate();
+					  first=false;
+					  
+				    		      }
+    		          		      
+    		      return(result || super.onTouchEvent(event, mapView));
+    		    }
+    		    
+    		    
+    		    
+    		    
+    		    private void setDragImagePosition(int x, int y) {
+    		      RelativeLayout.LayoutParams lp=
+    		        (RelativeLayout.LayoutParams)dragImage.getLayoutParams();
+    		            
+    		      lp.setMargins(x-xDragImageOffset-xDragTouchOffset,
+    		                      y-yDragImageOffset-yDragTouchOffset, 0, 0);
+    		      dragImage.setLayoutParams(lp);
+    		    }
+    		  }
+    	
+    	 
+    	
+    	 
 }

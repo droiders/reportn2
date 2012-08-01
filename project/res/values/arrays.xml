@@ -13,4 +13,16 @@
         <item>@string/invitetype2</item>
         <item>@string/invitetype3</item>
 </string-array>
+
+<string-array name="listArray">
+    <item>Headings</item>
+    <item>Headings and Details</item>
+  
+</string-array>
+<string-array name="listValues">
+    <item>1</item>
+    <item>2</item>
+    <item>3</item>
+</string-array>
+
 </resources>

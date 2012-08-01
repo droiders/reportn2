@@ -1,26 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent" >
-	
-    
- 
-	<com.google.android.maps.MapView
- android:id="@+id/mapView"
- android:layout_width="fill_parent"
- android:layout_height="fill_parent"
- android:enabled="true"
- android:clickable="true"
- android:apiKey="0txfSdKgq1jyXITrT4qEfW_cUOttal92XYm4zBA"
- />
-	<LinearLayout android:id="@+id/zoom"
-android:layout_width="wrap_content"
-android:layout_height="wrap_content"
-android:layout_alignParentBottom="true"
-android:layout_centerHorizontal="true"
-/>
-
-	<EditText
+        android:layout_width="wrap_content" android:layout_height="wrap_content">
+        <com.google.android.maps.MapView
+                android:id="@+id/map" android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:apiKey="0AOcNg3jtfznTAzqBVVN0ClQywGpJPFVtouDDug"
+                android:clickable="true" />
+        <ImageView android:id="@+id/drag" android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:src="@drawable/pushpin"
+                android:visibility="gone" />
+        <ImageButton
+	    android:id="@+id/button_camera"
+	    android:src="@android:drawable/ic_menu_camera"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:layout_alignParentBottom="true"
+	    android:layout_alignParentRight="true"
+	    android:text="Button" />
+<EditText
 	    android:id="@+id/adresse"
 	    android:layout_width="wrap_content"
 	    android:layout_height="wrap_content"
@@ -29,16 +25,11 @@ android:layout_centerHorizontal="true"
 	    android:layout_alignParentTop="true"
 	    android:ems="10" >
 
-	    <requestFocus />
+	    <requestFocus android:focusable="false" />
 	</EditText>
+	
 
-	<ImageButton
-	    android:id="@+id/button_camera"
-	    android:src="@android:drawable/ic_menu_camera"
-	    android:layout_width="wrap_content"
-	    android:layout_height="wrap_content"
-	    android:layout_alignParentBottom="true"
-	    android:layout_alignParentRight="true"
-	    android:text="Button" />
 
 </RelativeLayout>
+
+

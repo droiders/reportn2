@@ -20,7 +20,7 @@ public abstract class DashBoardActivity extends Activity {
         super.onCreate(savedInstanceState);
     }
     
-    public void setHeader(String title, boolean btnHomeVisible, boolean btnFeedbackVisible)
+   /* public void setHeader(String title, boolean btnHomeVisible, boolean btnFeedbackVisible)
     {
     		ViewStub stub = (ViewStub) findViewById(R.id.vsHeader);
     		View inflated = stub.inflate();
@@ -36,7 +36,7 @@ public abstract class DashBoardActivity extends Activity {
     		if(!btnFeedbackVisible)
     			btnFeedback.setVisibility(View.INVISIBLE);
     		
-    }
+    }*/
     
     /**
      * Home button click handler
