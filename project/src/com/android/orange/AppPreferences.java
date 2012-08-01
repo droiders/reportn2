@@ -79,7 +79,6 @@ getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeL
         	alertDialog.setTitle("Erreur...");
         	alertDialog.setMessage("Email non valide");
         	alertDialog.show();
-    	 
      }
        
      

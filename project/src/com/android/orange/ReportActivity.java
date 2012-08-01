@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-
+import com.android.orange.R;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -32,7 +32,7 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 
-import com.android.orange.R;
+
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.MapActivity;
@@ -48,8 +48,8 @@ public class ReportActivity extends MapActivity implements
 
     private MapView mapView = null;
     private LocationManager lm = null;
-    private double lat = 0;
-    private double lng = 0;
+    static double lat = 0;
+    static double lng = 0;
     private MapController mc = null;
     private MyLocationOverlay myLocation = null;
     double lat0;
@@ -57,6 +57,7 @@ public class ReportActivity extends MapActivity implements
     double tmp1,tmp2;
     GeoPoint pp = null;
     EditText text;
+    int CAMERA_PIC_REQUEST = 1337;
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -193,6 +194,15 @@ public class ReportActivity extends MapActivity implements
     
     public void onStatusChanged(String provider, int status, Bundle extras) {
     }
+    
+    public static double getLatitude(){
+		return lat;
+		}
+    public static double getLongitude(){
+		return lng;
+		}
+   
+    
     private Handler handler = new Handler() {
 
     	  public void handleMessage(android.os.Message msg) {

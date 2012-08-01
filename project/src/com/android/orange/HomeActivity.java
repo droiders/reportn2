@@ -31,7 +31,7 @@ public class HomeActivity extends DashBoardActivity {
     	
     	switch (v.getId()) {
 		case R.id.main_btn_eclair:
-			intent = new Intent(this, FormActivity.class);
+			intent = new Intent(this, ReportActivity.class);
 			startActivity(intent);
 			break;
 

@@ -1,78 +1,104 @@
-/*
- * Copyright (c) 2010, Lauren Darcey and Shane Conder
- * All rights reserved.
- * 
- * Redistribution and use in source and binary forms, with or without modification, are 
- * permitted provided that the following conditions are met:
- * 
- * * Redistributions of source code must retain the above copyright notice, this list of 
- *   conditions and the following disclaimer.
- *   
- * * Redistributions in binary form must reproduce the above copyright notice, this list 
- *   of conditions and the following disclaimer in the documentation and/or other 
- *   materials provided with the distribution.
- *   
- * * Neither the name of the <ORGANIZATION> nor the names of its contributors may be used
- *   to endorse or promote products derived from this software without specific prior 
- *   written permission.
- *   
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY 
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES 
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, 
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED 
- * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR 
- * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, 
- * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF 
- * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
- * <ORGANIZATION> = Mamlambo
- */
+
 package com.android.orange;
 
-import com.android.orange.R;
+import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
 
-import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.location.Address;
+import android.location.Geocoder;
+import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Spinner;
+import android.widget.TextView;
 
-public class FormActivity extends Activity {
-	EditText name, surname, age;
+import com.google.android.maps.GeoPoint;
+import com.google.android.maps.MapActivity;
+import com.google.android.maps.MapController;
+import com.google.android.maps.MapView;
+import com.google.android.maps.MyLocationOverlay;
+
+public class FormActivity extends MapActivity {
+	static TextView txt;
+	private MapView mapView = null;
+	EditText name, email;
+	takephoto tp;
+	ReportActivity pa;
+	private MapController mc = null;
+	
+	private MyLocationOverlay myLocation = null;
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
 		setContentView(R.layout.form);
+		//txt=(TextView) findViewById(R.id.adress);
+		mapView = (MapView) this.findViewById(R.id.mapView1);
+		
+		mapView.setSatellite(true);
+		double lat = pa.getLatitude();
+		double lng = pa.getLongitude();
+		System.out.println(lat);
+		GeoPoint p = new GeoPoint((int) (lat * 1E6), (int) (lng * 1E6));
+		mc=mapView.getController();
+		mc.animateTo(p);
+		mc.setCenter(p);
+
+		
+	/*myLocation.runOnFirstFix(new Runnable() {
+		    public void run() {
+			mc.animateTo(myLocation.getMyLocation());
+			mc.setZoom(17);
+			handler.sendEmptyMessage(1);
+		    }
+		});*/
+		int i;
+		if ( (i=getIntent().getExtras().getInt("flag"))!=1){
+	    ImageView report=(ImageView) findViewById(R.id.pictosend);
+		tp=new takephoto();
+		Bitmap bp=tp.getBitmap();
+		report.setImageBitmap(bp);
+		}else{
+			ImageView report=(ImageView) findViewById(R.id.pictosend);
+		   int j=getIntent().getExtras().getInt("position");
+		   ImageAdapter imageAdapter = new ImageAdapter(this);
+	        Bitmap myBitmap = BitmapFactory.decodeFile(imageAdapter.mlistFiles[j].getAbsolutePath());
+			report.setImageBitmap(myBitmap);
+		}
 		 init();
 	}
-	
+
 	private void init() {
-		name = (EditText) findViewById(R.id.EditTextName);
-		surname = (EditText) findViewById(R.id.EditTextEmail);
+		name = (EditText) findViewById(R.id.name);
+		email = (EditText) findViewById(R.id.Email);
 	/*	age = (EditText) findViewById(R.id.editTextAge);
 		age.setInputType(InputType.TYPE_CLASS_NUMBER);*/
 		readPerson();
 	}
 	public void sendFeedback(View button) {
-
 		
-		final EditText nameField = (EditText) findViewById(R.id.EditTextName);
+		final EditText nameField = (EditText) findViewById(R.id.name);
 		String name = nameField.getText().toString();
-			
-		final EditText emailField = (EditText) findViewById(R.id.EditTextEmail);
+
+		final EditText emailField = (EditText) findViewById(R.id.Email);
 		String email = emailField.getText().toString();
-		
-		final EditText feedbackField = (EditText) findViewById(R.id.EditTextFeedbackBody);
+
+		final EditText feedbackField = (EditText) findViewById(R.id.commentaire);
 		String feedback = feedbackField.getText().toString();
-		
+
 		final Spinner feedbackSpinner = (Spinner) findViewById(R.id.SpinnerFeedbackType);
 		String feedbackType = feedbackSpinner.getSelectedItem().toString();
 
-		
+
 		final CheckBox responseCheckbox = (CheckBox) findViewById(R.id.CheckBoxResponse);
 		boolean bRequiresResponse = responseCheckbox.isChecked();
 
@@ -81,26 +107,26 @@ public class FormActivity extends Activity {
 
 		String message = formatFeedbackMessage(feedbackType, name,
 			 email, feedback, bRequiresResponse);
-		
+
 		// Create the message
 		sendFeedbackMessage(subject, message);
 	}
 
-	
+
 	protected String formatFeedbackSubject(String feedbackType) {
-		
+
 		String strFeedbackSubjectFormat = getResources().getString(
 				R.string.feedbackmessagesubject_format);
 
 		String strFeedbackSubject = String.format(strFeedbackSubjectFormat, feedbackType);
-		
+
 		return strFeedbackSubject;
 
 	}
-	
+
 	protected String formatFeedbackMessage(String feedbackType, String name,
 			String email, String feedback, boolean bRequiresResponse) {
-		
+
 		String strFeedbackFormatMsg = getResources().getString(
 				R.string.feedbackmessagebody_format);
 
@@ -108,11 +134,11 @@ public class FormActivity extends Activity {
 
 		String strFeedbackMsg = String.format(strFeedbackFormatMsg,
 				feedbackType, feedback, name, email, strRequiresResponse);
-		
+
 		return strFeedbackMsg;
 
 	}
-	
+
 
 	protected String getResponseString(boolean bRequiresResponse)
 	{
@@ -122,7 +148,7 @@ public class FormActivity extends Activity {
 		} else {
 			return getResources().getString(R.string.feedbackmessagebody_responseno);
 		}
-			
+
 	}
 
 	public void sendFeedbackMessage(String subject, String message) {
@@ -139,13 +165,13 @@ public class FormActivity extends Activity {
 
 		startActivity(messageIntent);
 	}
-	
+
 
 	public void save(View view) {
 		String nameText = name.getText().toString();
-		String surnameText = surname.getText().toString();
+		String surnameText = email.getText().toString();
 	//	String ageText = age.getText().toString();
-		
+
 		if (nameText != null)
 			PreferenceConnector.writeString(this, PreferenceConnector.NAME,
 					nameText);
@@ -176,11 +202,58 @@ public class FormActivity extends Activity {
 	private void readPerson() {
 		name.setText(PreferenceConnector.readString(this,
 				PreferenceConnector.NAME, null));
-		surname.setText(PreferenceConnector.readString(this,
+		email.setText(PreferenceConnector.readString(this,
 				PreferenceConnector.SURNAME, null));
 		/*String agePref = ""
 				+ PreferenceConnector.readInteger(this,
 						PreferenceConnector.AGE, 0);
 		age.setText((agePref.equals("0")) ? null : agePref);*/
 	}
+
+	@Override
+	protected boolean isRouteDisplayed() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	private Handler handler = new Handler() {
+
+  	  public void handleMessage(android.os.Message msg) {
+
+  	  
+  	   if(msg.what == 1) {
+
+  	    Geocoder geoCoder1 = new Geocoder(
+  	      getBaseContext(), Locale.getDefault());
+  	    try {
+
+  	     GeoPoint p1 = new GeoPoint(myLocation.getMyLocation().getLatitudeE6(), myLocation.getMyLocation().getLongitudeE6());
+  	     List<Address> addresses1 = geoCoder1.getFromLocation(
+  	       p1.getLatitudeE6()  / 1E6, 
+  	       p1.getLongitudeE6() / 1E6, 1);
+
+
+  	     String AdresseLocation;
+			if (addresses1.size() > 0) 
+  	     {
+  	      AdresseLocation="";
+  	      for (int i=0; i<3; 
+  	        i++){
+
+  	       AdresseLocation += addresses1.get(0).getAddressLine(i) + "  ";
+  	      }
+  	     }else{AdresseLocation="Adresse Actuelle inconnue";}
+
+  	     txt.setHint(AdresseLocation);
+  	    }
+  	    catch (IOException e) {  
+
+  	     e.printStackTrace();
+  	    } 
+
+
+  	   }
+
+  	  };
+
+  	 };
 }
