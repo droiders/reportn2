@@ -5,8 +5,6 @@ package com.android.orange;
  * http://www.technotalkative.com
  */
 
-import com.android.orange.R;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -21,8 +19,8 @@ public abstract class DashBoardActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
     }
-       
-    public void setHeader(String title, boolean btnHomeVisible, boolean btnFeedbackVisible)
+    
+   /* public void setHeader(String title, boolean btnHomeVisible, boolean btnFeedbackVisible)
     {
     		ViewStub stub = (ViewStub) findViewById(R.id.vsHeader);
     		View inflated = stub.inflate();
@@ -38,7 +36,7 @@ public abstract class DashBoardActivity extends Activity {
     		if(!btnFeedbackVisible)
     			btnFeedback.setVisibility(View.INVISIBLE);
     		
-    }
+    }*/
     
     /**
      * Home button click handler
@@ -50,8 +48,8 @@ public abstract class DashBoardActivity extends Activity {
     	intent.setFlags (Intent.FLAG_ACTIVITY_CLEAR_TOP);
     	startActivity(intent);
     	
-    }
-    
+    }//
+    //ssq
     /**
      * Feedback button click handler
      * @param v

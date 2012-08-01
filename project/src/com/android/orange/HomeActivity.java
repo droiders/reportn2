@@ -17,7 +17,7 @@ public class HomeActivity extends DashBoardActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-        setHeader(getString(R.string.HomeActivityTitle), false, true);
+ //       setHeader(getString(R.string.HomeActivityTitle), false, true);
         
     }
     
@@ -31,7 +31,7 @@ public class HomeActivity extends DashBoardActivity {
     	
     	switch (v.getId()) {
 		case R.id.main_btn_eclair:
-			intent = new Intent(this, ReportActivity.class);
+			intent = new Intent(this, FormActivity.class);
 			startActivity(intent);
 			break;
 
@@ -55,10 +55,10 @@ public class HomeActivity extends DashBoardActivity {
 			startActivity(intent);
 			break;
 			
-		/*case R.id.main_btn_jellybean:
-			intent = new Intent(this, Activity_JellyBean.class);
+		case R.id.main_btn_jellybean:
+			intent = new Intent(this, AppPreferences.class);
 			startActivity(intent);
-			break;	*/
+			break;	
 		default:
 			break;
 		}

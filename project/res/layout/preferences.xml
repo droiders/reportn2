@@ -8,10 +8,12 @@
                       android:key="email" 
                       android:summary="Entrez votre Email"></EditTextPreference>
   
-  <CheckBoxPreference android:title="Rendre mon email publique"
+ <!-- <CheckBoxPreference android:title="Rendre mon email publique"
                       android:defaultValue="false"
                       android:summary="Visible dans les rapports"
                       android:key="pub" />
+                      
+                        -->  
   
  <!--    <ListPreference     android:title="Download Details"
                       android:summary="Select the kind of data that you would like to download"
@@ -27,8 +29,8 @@
 
     <intent
              android:action="android.intent.action.VIEW"
-             android:targetPackage="com.technotalkative.viewstubdemo"
-             android:targetClass="com.technotalkative.viewstubdemo.MyEmailDemo" /> 
+             android:targetPackage="com.android.orange"
+             android:targetClass="com.android.orange.MyEmailDemo" /> 
 
   </Preference>
   
@@ -38,8 +40,8 @@
 
     <intent
              android:action="android.intent.action.VIEW"
-             android:targetPackage="com.technotalkative.viewstubdemo"
-             android:targetClass="com.technotalkative.viewstubdemo.APropos" /> 
+             android:targetPackage="com.android.orange"
+             android:targetClass="com.android.orange.APropos" /> 
 
   </Preference>
   
@@ -49,8 +51,8 @@
 
     <intent
              android:action="android.intent.action.VIEW"
-             android:targetPackage="com.technotalkative.viewstubdemo"
-             android:targetClass="com.technotalkative.viewstubdemo.UserGuide" /> 
+             android:targetPackage="com.android.orange"
+             android:targetClass="com.android.orange.UserGuide" /> 
 
   </Preference>
    
